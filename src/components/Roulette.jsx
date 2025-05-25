@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 
 const reglasIniciales = [
@@ -45,6 +43,10 @@ const reglasIniciales = [
     },
 ]
 
+const reglasUsuario = localStorage.getItem("reglasUsuario")
+    ? JSON.parse(localStorage.getItem("reglasUsuario"))
+    : null
+
 const colores = [
     "#ef4444",
     "#3b82f6",
@@ -69,7 +71,7 @@ export default function Roulette() {
     const [contadorMuertes, setContadorMuertes] = useState(0)
 
     // Reglas editables
-    const [reglas, setReglas] = useState(reglasIniciales)
+    const [reglas, setReglas] = useState(reglasUsuario || reglasIniciales)
     const [editando, setEditando] = useState(false)
 
     // Verificar si se puede tirar
@@ -132,11 +134,13 @@ export default function Roulette() {
         const nuevasReglas = [...reglas]
         nuevasReglas[index] = { ...nuevasReglas[index], [campo]: valor }
         setReglas(nuevasReglas)
+        localStorage.setItem("reglasUsuario", JSON.stringify(nuevasReglas))
     }
 
     const agregarRegla = () => {
         if (reglas.length < 12) {
-        setReglas([...reglas, { titulo: "✨ Nueva regla", descripcion: "Describe aquí el efecto de la regla" }])
+            setReglas([...reglas, { titulo: "✨ Nueva regla", descripcion: "Describe aquí el efecto de la regla" }])
+            localStorage.setItem("reglasUsuario", JSON.stringify([...reglas, { titulo: "✨ Nueva regla", descripcion: "Describe aquí el efecto de la regla" }]))
         }
     }
 
@@ -144,6 +148,7 @@ export default function Roulette() {
         if (reglas.length > 3) {
         const nuevasReglas = reglas.filter((_, i) => i !== index)
         setReglas(nuevasReglas)
+        localStorage.setItem("reglasUsuario", JSON.stringify(nuevasReglas))
         }
     }
 
