@@ -1,4 +1,11 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import Counter from "./Counter"
+import Gen7Switch from "./Gen7Switch"
+import RouletteComponent from "./RouletteComponent"
+import RouletteResult from "./RouletteResult"
+import Modal from "./ModalComponent"
+import RuleList from "./RuleList"
+import EditRuleList from "./EditRuleList"
 
 const reglasIniciales = [
     {
@@ -60,48 +67,157 @@ const colores = [
     "#06b6d4",
 ]
 
+const actualizaciones = [
+    {
+        version: "v1.1",
+        fecha: "26/05/2025",
+        titulo: "🌺 Modo Gen 7 (Alola)",
+        cambios: [
+            "Añadido alternar entre modo clásico y Gen 7 (Recorrido Insular)",
+            "Contador híbrido con Pruebas (1 necesaria) y Kahunas (1 necesario)",
+            "Colores dinámicos que cambian según el modo seleccionado",
+            "Selector interno para alternar entre Pruebas y Kahunas",
+            "Guardado de contadores en localStorage para persistencia y mejora de experiencia",
+            "Mejoras en la interfaz y animaciones",
+            "Añadido contacto para reportar errores o sugerencias al desarrollador mediante enlace a email en esta ventana",
+            "Solucionado error que permitía aumentar contadores más allá del límite"
+        ],
+    },
+    {
+        version: "v1.0.1",
+        fecha: "25/05/2025",
+        titulo: "🎨 Rediseño completo",
+        cambios: [
+            "Interfaz completamente responsive para móviles y desktop",
+            "Editor de reglas en tiempo real",
+            "Resultado mostrado encima de la ruleta con botón de cerrar",
+            "Textos más grandes y legibles en todos los dispositivos",
+            "Animaciones mejoradas y transiciones suaves",
+            "Guardado automático de reglas en localStorage para persistencia y mejora de experiencia",
+        ],
+    },
+    {
+        version: "v1.0.0",
+        fecha: "24/05/2025",
+        titulo: "🎯 Lanzamiento inicial",
+        cambios: [
+            "Ruleta básica con 10 reglas predefinidas con posibilidad de edición",
+            "Animación de giro suave y realista",
+            "Diseño colorido con segmentos diferenciados",
+            "Sistema de contadores para Rutas (3), Gimnasios (1) y Muertes (1)",
+            "La ruleta solo se activa al cumplir las condiciones",
+            "Reseteo automático de contadores tras usar la ruleta",
+            "Indicadores visuales de progreso",
+        ],
+    },
+]
+
 export default function Roulette() {
     const [girando, setGirando] = useState(false)
     const [angulo, setAngulo] = useState(0)
     const [resultado, setResultado] = useState(null)
+    const [modalAbierto, setModalAbierto] = useState(false)
+    const [modalCerrando, setModalCerrando] = useState(false)
 
     // Contadores
-    const [contadorRutas, setContadorRutas] = useState(0)
-    const [contadorGimnasios, setContadorGimnasios] = useState(0)
-    const [contadorMuertes, setContadorMuertes] = useState(0)
+    const [isGen7Mode, setIsGen7Mode] = useState(false)
+    const [contadorRutas, setContadorRutas] = useState(localStorage.getItem("routeCounter") ? parseInt(localStorage.getItem("routeCounter")) : 0)
+    const [contadorGimnasios, setContadorGimnasios] = useState(localStorage.getItem("gymCounter") ? parseInt(localStorage.getItem("gymCounter")) : 0)
+    const [contadorMuertes, setContadorMuertes] = useState(localStorage.getItem("deathCounter") ? parseInt(localStorage.getItem("deathCounter")) : 0)
+    const [contadorPruebas, setContadorPruebas] = useState(localStorage.getItem("questCounter") ? parseInt(localStorage.getItem("questCounter")) : 0)
+    const [contadorKahunas, setContadorKahunas] = useState(localStorage.getItem("kahunaCounter") ? parseInt(localStorage.getItem("kahunaCounter")) : 0)
+    const [modoKahuna, setModoKahuna] = useState(false)
 
     // Reglas editables
     const [reglas, setReglas] = useState(reglasUsuario || reglasIniciales)
     const [editando, setEditando] = useState(false)
 
+    useEffect(() => {
+        localStorage.setItem("routeCounter", contadorRutas)
+        localStorage.setItem("gymCounter", contadorGimnasios)
+        localStorage.setItem("deathCounter", contadorMuertes)
+        localStorage.setItem("questCounter", contadorPruebas)
+        localStorage.setItem("kahunaCounter", contadorKahunas)
+    }, [contadorRutas, contadorGimnasios, contadorMuertes, contadorPruebas, contadorKahunas])
+
     // Verificar si se puede tirar
-    const puedeGirar = contadorRutas >= 3 || contadorGimnasios >= 1 || contadorMuertes >= 1
+    const puedeGirar =
+        contadorRutas >= 3 ||
+        (!isGen7Mode ? contadorGimnasios >= 1 : modoKahuna ? contadorKahunas >= 1 : contadorPruebas >= 1) ||
+        contadorMuertes >= 1
+    
+    const getHybridColors = () => {
+        if (!isGen7Mode) {
+        return {
+            bg: "bg-blue-50",
+            border: "border-blue-200",
+            title: "text-blue-800",
+            counter: "text-blue-600",
+            button: "bg-blue-600 hover:bg-blue-700",
+            text: "text-blue-700",
+        }
+        }
+
+        if (modoKahuna) {
+        return {
+            bg: "bg-yellow-50",
+            border: "border-yellow-200",
+            title: "text-yellow-800",
+            counter: "text-yellow-600",
+            button: "bg-yellow-600 hover:bg-yellow-700",
+            text: "text-yellow-700",
+        }
+        } else {
+        return {
+            bg: "bg-orange-50",
+            border: "border-orange-200",
+            title: "text-orange-800",
+            counter: "text-orange-600",
+            button: "bg-orange-600 hover:bg-orange-700",
+            text: "text-orange-700",
+        }
+        }
+    }
+
+    const hybridColors = getHybridColors()
 
     const incrementarContador = (tipo) => {
         if (girando) return
 
         switch (tipo) {
         case "rutas":
-            setContadorRutas((prev) => prev + 1)
+            contadorRutas < 3 ? setContadorRutas((prev) => prev + 1) : setContadorRutas(contadorRutas)
             break
         case "gimnasios":
-            setContadorGimnasios((prev) => prev + 1)
+            contadorGimnasios < 1 ? setContadorGimnasios((prev) => prev + 1) : setContadorGimnasios(contadorGimnasios)
             break
         case "muertes":
-            setContadorMuertes((prev) => prev + 1)
+            contadorMuertes < 1 ? setContadorMuertes((prev) => prev + 1) : setContadorMuertes(contadorMuertes)
+            break
+        case "pruebas":
+            contadorPruebas < 1 ? setContadorPruebas((prev) => prev + 1) : setContadorPruebas(contadorPruebas)
+            break
+        case "kahunas":
+            contadorKahunas < 1 ? setContadorKahunas((prev) => prev + 1) : setContadorKahunas(contadorKahunas)
             break
         }
     }
 
     const resetearContadores = () => {
         if (contadorRutas >= 3) {
-        setContadorRutas(0)
+            setContadorRutas(0)
         }
         if (contadorGimnasios >= 1) {
-        setContadorGimnasios(0)
+            setContadorGimnasios(0)
         }
         if (contadorMuertes >= 1) {
-        setContadorMuertes(0)
+            setContadorMuertes(0)
+        }
+        if (contadorPruebas >= 1) {
+            setContadorPruebas(0)
+        }
+        if (contadorKahunas >= 1) {
+            setContadorKahunas(0)
         }
     }
 
@@ -154,6 +270,14 @@ export default function Roulette() {
 
     const restaurarReglas = () => {
         setReglas(reglasIniciales)
+    }
+
+    const cerrarModal = () => {
+        setModalCerrando(true)
+        setTimeout(() => {
+        setModalAbierto(false)
+        setModalCerrando(false)
+        }, 300)
     }
 
     const crearSegmento = (index) => {
@@ -219,248 +343,197 @@ export default function Roulette() {
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 w-full max-w-7xl">
             {/* Header con texto más grande */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-2 sm:space-y-0">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-800 text-center sm:text-left">
-                🎮 Ruleta Nuzlocke
-            </h1>
-            <button
-                className={`px-4 sm:px-6 py-3 font-bold text-base sm:text-lg lg:text-xl rounded-lg transition-all duration-200 hover:cursor-pointer ${
-                editando ? "bg-green-600 text-white hover:bg-green-700" : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
-                onClick={() => setEditando(!editando)}
-                disabled={girando}
-            >
-                {editando ? "✅ Guardar" : "✏️ Editar Reglas"}
-            </button>
+                <div className="flex items-center justify-center sm:justify-start space-x-3">
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-800">🎮 Ruleta Nuzlocke</h1>
+                    <button
+                    onClick={() => setModalAbierto(true)}
+                    className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full flex items-center justify-center font-bold text-lg sm:text-xl lg:text-2xl transition-all duration-200 shadow-md hover:shadow-lg hover:cursor-pointer"
+                    title="Ver actualizaciones"
+                    >
+                    ?
+                    </button>
+                </div>
+                <button
+                    className={`px-4 sm:px-6 py-3 font-bold text-base sm:text-lg lg:text-xl rounded-lg transition-all duration-200 hover:cursor-pointer ${
+                    editando ? "bg-green-600 text-white hover:bg-green-700" : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                    onClick={() => setEditando(!editando)}
+                    disabled={girando}
+                >
+                    {editando ? "✅ Guardar" : "✏️ Editar Reglas"}
+                </button>
             </div>
 
             <p className="text-center text-gray-600 mb-6 sm:mb-8 text-base sm:text-lg lg:text-xl">
-            La ruleta se activa al cumplir cualquiera de las condiciones
+                La ruleta se activa al cumplir cualquiera de las condiciones
             </p>
 
             <div className="flex flex-col items-center space-y-6 sm:space-y-8">
             {/* Resultado encima de la ruleta con botón de cerrar */}
             {resultado && (
-                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-5 sm:p-7 rounded-xl shadow-lg border-4 border-yellow-300 w-full max-w-3xl relative">
-                {/* Botón de cerrar */}
-                <button
-                    onClick={cerrarResultado}
-                    className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-10 sm:h-10 bg-red-500 hover:bg-red-600 hover:cursor-pointer text-white rounded-full flex items-center justify-center font-bold text-lg sm:text-xl transition-all duration-200 shadow-lg hover:shadow-xl"
-                    title="Cerrar resultado"
-                >
-                    ✕
-                </button>
-
-                <div className="text-center pr-8 sm:pr-12">
-                    <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
-                    🎯 Resultado:{" "}
-                    <span className="text-3xl sm:text-4xl lg:text-5xl block sm:inline mt-2 sm:mt-0">
-                        {resultado.titulo}
-                    </span>
-                    </p>
-                    <p className="text-lg sm:text-xl lg:text-2xl text-gray-700 bg-white bg-opacity-50 rounded-lg p-4">
-                    📝 {resultado.descripcion}
-                    </p>
-                </div>
-                </div>
+                <RouletteResult
+                    cerrarResultado={cerrarResultado}
+                    resultado={resultado}
+                />
             )}
 
             {/* Contenedor de la ruleta */}
-            <div className="relative w-full flex justify-center">
-                {/* Ruleta SVG */}
-                <div className="relative">
-                <svg
-                    width="350"
-                    height="350"
-                    viewBox="0 0 600 600"
-                    className="w-[350px] h-[350px] sm:w-[450px] sm:h-[450px] lg:w-[650px] lg:h-[650px] drop-shadow-2xl transition-transform duration-[3000ms] ease-out"
-                    style={{
-                    transform: `rotate(${angulo}deg)`,
-                    }}
-                >
-                    {/* Borde exterior */}
-                    <circle cx="300" cy="300" r="290" fill="none" stroke="#1f2937" strokeWidth="20" />
+            <RouletteComponent
+                reglas={reglas}
+                angulo={angulo}
+                crearSegmento={crearSegmento}
+            />
 
-                    {/* Segmentos */}
-                    {reglas.map((_, index) => crearSegmento(index))}
+            <div className="w-full grid grid-cols-3 items-center gap-4">
+                {/* Columna izquierda vacía para balance */}
+                <div></div>
 
-                    {/* Centro */}
-                    <circle cx="300" cy="300" r="40" fill="#1f2937" stroke="#ffffff" strokeWidth="4" />
-
-                    {/* Logo central más grande */}
-                    <text
-                    x="300"
-                    y="310"
-                    fill="white"
-                    fontSize="28"
-                    fontWeight="bold"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
+                {/* Botón centrado en la columna del medio */}
+                <div className="flex justify-center">
+                    <button
+                        className={`px-8 sm:px-12 py-4 sm:py-5 font-bold text-xl sm:text-2xl lg:text-3xl rounded-xl transition-all duration-200 shadow-lg hover:cursor-pointer ${
+                        puedeGirar && !girando
+                            ? "bg-red-600 text-white hover:bg-red-700 hover:shadow-xl transform hover:scale-105"
+                            : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                        }`}
+                        onClick={girar}
+                        disabled={girando || !puedeGirar || editando}
                     >
-                    </text>
-                </svg>
+                        {girando ? "🎲 Girando..." : puedeGirar ? "🎯 Tirar Ruleta" : "🔒 Ruleta Bloqueada"}
+                    </button>
                 </div>
-            </div>
 
-            {/* Botón de girar más grande */}
-            <button
-                className={`px-8 sm:px-12 py-4 sm:py-5 font-bold text-xl sm:text-2xl lg:text-3xl rounded-xl transition-all duration-200 shadow-lg w-full sm:w-auto hover:cursor-pointer ${
-                puedeGirar && !girando
-                    ? "bg-red-600 text-white hover:bg-red-700 hover:shadow-xl transform hover:scale-105"
-                    : "bg-gray-400 text-gray-200 cursor-not-allowed"
-                }`}
-                onClick={girar}
-                disabled={girando || !puedeGirar || editando}
-            >
-                {girando ? "🎲 Girando..." : puedeGirar ? "🎯 Tirar Ruleta" : "🔒 Ruleta Bloqueada"}
-            </button>
+                {/* Switch en la columna derecha */}
+                <Gen7Switch
+                    isGen7Mode={isGen7Mode}
+                    onChange={setIsGen7Mode}
+                    disabled={girando || editando}
+                />
+            </div>
 
             {/* Contadores con texto más grande */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full max-w-5xl">
                 {/* Contador de Rutas */}
-                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-5 sm:p-7 text-center">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-green-800 mb-3">🗺️ Rutas</h3>
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-600 mb-4">{contadorRutas}/3</div>
-                <button
-                    className="px-4 sm:px-6 py-3 bg-green-600 text-white font-bold text-sm sm:text-base lg:text-lg rounded-lg hover:bg-green-700 disabled:opacity-50 transition-all duration-200 w-full sm:w-auto hover:cursor-pointer"
-                    onClick={() => incrementarContador("rutas")}
+                <Counter
+                    title={"🗺️ Rutas"}
+                    counter={contadorRutas}
+                    onIncrement={() => incrementarContador("rutas")}
                     disabled={girando || editando}
+                    text={"+ Ruta Completada"}
+                    counterText={`Faltan ${3 - contadorRutas} rutas`}
+                    limit={3}
+                    color={"green"}
+                />
+
+                {/* Contador de Gimnasios/Pruebas/Kahunas (Híbrido) */}
+                <div
+                className={`${hybridColors.bg} border-2 ${hybridColors.border} rounded-xl p-5 sm:p-7 text-center transition-all duration-300`}
                 >
-                    + Ruta Completada
-                </button>
-                <p className="text-sm sm:text-base lg:text-lg text-green-700 mt-3">
-                    {contadorRutas >= 3 ? "¡Listo para tirar!" : `Faltan ${3 - contadorRutas} rutas`}
-                </p>
+                <h3 className={`text-lg sm:text-xl lg:text-2xl font-bold ${hybridColors.title} mb-3`}>
+                    {!isGen7Mode ? "🏟️ Gimnasios" : modoKahuna ? "👑 Kahunas" : "🌺 Pruebas"}
+                </h3>
+
+                <div className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${hybridColors.counter} mb-4`}>
+                    {!isGen7Mode ? `${contadorGimnasios}/1` : modoKahuna ? `${contadorKahunas}/1` : `${contadorPruebas}/1`}
                 </div>
 
-                {/* Contador de Gimnasios */}
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 sm:p-7 text-center">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-800 mb-3">🏟️ Gimnasios</h3>
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-600 mb-4">{contadorGimnasios}/1</div>
                 <button
-                    className="px-4 sm:px-6 py-3 bg-blue-600 text-white font-bold text-sm sm:text-base lg:text-lg rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all duration-200 w-full sm:w-auto hover:cursor-pointer"
-                    onClick={() => incrementarContador("gimnasios")}
+                    className={`px-4 sm:px-6 py-3 ${hybridColors.button} text-white font-bold text-sm sm:text-base lg:text-lg rounded-lg disabled:opacity-50 transition-all duration-200 w-full sm:w-auto mb-3 hover:cursor-pointer`}
+                    onClick={() => incrementarContador(!isGen7Mode ? "gimnasios" : modoKahuna ? "kahunas" : "pruebas")}
                     disabled={girando || editando}
                 >
-                    + Gimnasio Vencido
+                    {!isGen7Mode ? "+ Gimnasio Vencido" : modoKahuna ? "+ Kahuna Vencido" : "+ Prueba Completada"}
                 </button>
-                <p className="text-sm sm:text-base lg:text-lg text-blue-700 mt-3">
-                    {contadorGimnasios >= 1 ? "¡Listo para tirar!" : "Derrota un líder"}
+
+                <p className={`text-sm sm:text-base lg:text-lg ${hybridColors.text} mb-3`}>
+                    {!isGen7Mode
+                    ? contadorGimnasios >= 1
+                        ? "¡Listo para tirar!"
+                        : "Derrota un líder"
+                    : modoKahuna
+                        ? contadorKahunas >= 1
+                        ? "¡Listo para tirar!"
+                        : "Derrota un Kahuna"
+                        : contadorPruebas >= 1
+                        ? "¡Listo para tirar!"
+                        : `Supera una prueba`}
                 </p>
+
+                {/* Selector movido abajo */}
+                {isGen7Mode && (
+                    <div className="flex justify-center">
+                        <div className="bg-white rounded-lg p-1 border border-gray-300 shadow-sm">
+                            <div className="flex">
+                            <button
+                                className={`px-3 py-1 text-xs sm:text-sm font-bold rounded transition-all duration-200 hover:cursor-pointer ${
+                                !modoKahuna
+                                    ? "bg-orange-500 text-white shadow-sm"
+                                    : "bg-transparent text-gray-600 hover:bg-gray-300"
+                                }`}
+                                onClick={() => setModoKahuna(false)}
+                                disabled={girando || editando}
+                            >
+                                🌺 Pruebas
+                            </button>
+                            <button
+                                className={`px-3 py-1 text-xs sm:text-sm font-bold rounded transition-all duration-200 hover:cursor-pointer ${
+                                modoKahuna
+                                    ? "bg-yellow-500 text-white shadow-sm"
+                                    : "bg-transparent text-gray-600 hover:bg-gray-300"
+                                }`}
+                                onClick={() => setModoKahuna(true)}
+                                disabled={girando || editando}
+                            >
+                                👑 Kahunas
+                            </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 </div>
 
                 {/* Contador de Muertes */}
-                <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-5 sm:p-7 text-center">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-800 mb-3">💀 Muertes</h3>
-                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-purple-600 mb-4">{contadorMuertes}/1</div>
-                <button
-                    className="px-4 sm:px-6 py-3 bg-purple-600 text-white font-bold text-sm sm:text-base lg:text-lg rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-all duration-200 w-full sm:w-auto hover:cursor-pointer"
-                    onClick={() => incrementarContador("muertes")}
+                <Counter
+                    title={"💀 Muertes"}
+                    counter={contadorMuertes}
+                    onIncrement={() => incrementarContador("muertes")}
                     disabled={girando || editando}
-                >
-                    + Pokémon Muerto
-                </button>
-                <p className="text-sm sm:text-base lg:text-lg text-purple-700 mt-3">
-                    {contadorMuertes >= 1 ? "¡Listo para tirar!" : "Sin muertes aún"}
-                </p>
-                </div>
+                    text={"+ Pokémon Muerto"}
+                    counterText={"Sin muertes"}
+                    limit={1}
+                    color={"purple"}
+                />
             </div>
 
             {/* Editor de reglas con texto más grande */}
             {editando && (
-                <div className="bg-gray-50 p-5 sm:p-7 rounded-lg w-full border-2 border-gray-200">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-5 space-y-3 sm:space-y-0">
-                    <h3 className="font-bold text-xl sm:text-2xl lg:text-3xl text-gray-800">✏️ Editar Reglas</h3>
-                    <div className="flex gap-3">
-                    <button
-                        className="px-4 py-2 bg-green-600 text-white text-sm sm:text-base lg:text-lg font-bold rounded hover:bg-green-700 disabled:opacity-50 hover:cursor-pointer"
-                        onClick={agregarRegla}
-                        disabled={reglas.length >= 12}
-                    >
-                        + Añadir
-                    </button>
-                    <button
-                        className="px-4 py-2 bg-gray-600 text-white text-sm sm:text-base lg:text-lg font-bold rounded hover:bg-gray-700 hover:cursor-pointer"
-                        onClick={restaurarReglas}
-                    >
-                        🔄 Restaurar
-                    </button>
-                    </div>
-                </div>
-
-                <div className="space-y-5">
-                    {reglas.map((regla, index) => (
-                    <div key={index} className="bg-white p-4 sm:p-5 rounded-lg border border-gray-200">
-                        <div className="flex flex-col sm:flex-row sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
-                        <div
-                            className="w-7 h-7 rounded-full flex-shrink-0 mx-auto sm:mx-0 sm:mt-1"
-                            style={{ backgroundColor: colores[index % colores.length] }}
-                        ></div>
-                        <div className="flex-1 space-y-3">
-                            <input
-                            type="text"
-                            value={regla.titulo}
-                            onChange={(e) => editarRegla(index, "titulo", e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded font-bold text-lg sm:text-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Título de la regla"
-                            maxLength={30}
-                            />
-                            <textarea
-                            value={regla.descripcion}
-                            onChange={(e) => editarRegla(index, "descripcion", e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                            placeholder="Descripción del efecto"
-                            rows="3"
-                            maxLength={150}
-                            />
-                        </div>
-                        <button
-                            className="px-4 py-3 bg-red-500 text-white text-sm sm:text-base lg:text-lg rounded hover:bg-red-600 disabled:opacity-50 flex-shrink-0 w-full sm:w-auto hover:cursor-pointer"
-                            onClick={() => eliminarRegla(index)}
-                            disabled={reglas.length <= 3}
-                        >
-                            ✕ Eliminar
-                        </button>
-                        </div>
-                    </div>
-                    ))}
-                </div>
-
-                <p className="text-base sm:text-lg text-gray-600 mt-5">
-                    💡 Puedes tener entre 3 y 12 reglas. Los cambios se reflejan inmediatamente en la ruleta.
-                </p>
-                </div>
+                <EditRuleList
+                    agregarRegla={agregarRegla}
+                    reglas={reglas}
+                    editarRegla={editarRegla}
+                    eliminarRegla={eliminarRegla}
+                    restaurarReglas={restaurarReglas}
+                    colores={colores}
+                />
             )}
 
             {/* Lista de reglas con texto más grande */}
             {!editando && (
-                <div className="bg-gray-100 p-5 sm:p-7 rounded-lg w-full">
-                <h3 className="font-bold text-xl sm:text-2xl lg:text-3xl mb-5 text-gray-800">
-                    📋 Reglas actuales ({reglas.length}):
-                </h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {reglas.map((regla, index) => (
-                    <div key={index} className="bg-white p-4 sm:p-5 rounded-lg border border-gray-200">
-                        <div className="flex items-start space-x-3">
-                        <div
-                            className="w-5 h-5 rounded-full flex-shrink-0 mt-1"
-                            style={{ backgroundColor: colores[index % colores.length] }}
-                        ></div>
-                        <div className="min-w-0 flex-1">
-                            <div className="font-bold text-base sm:text-lg lg:text-xl text-gray-800 break-words">
-                            {regla.titulo}
-                            </div>
-                            <div className="text-sm sm:text-base lg:text-lg text-gray-600 mt-2 break-words">
-                            {regla.descripcion}
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-                    ))}
-                </div>
-                </div>
+                <RuleList
+                    reglas={reglas}
+                    colores={colores}
+                />
             )}
             </div>
         </div>
+        {/* Modal de actualizaciones */}
+        {modalAbierto && (
+            <Modal
+                modalCerrando={modalCerrando}
+                cerrarModal={cerrarModal}
+                actualizaciones={actualizaciones}
+            />
+        )}
         </div>
     )
 }
