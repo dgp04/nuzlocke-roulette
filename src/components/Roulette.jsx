@@ -80,7 +80,8 @@ const actualizaciones = [
             "Guardado de contadores en localStorage para persistencia y mejora de experiencia",
             "Mejoras en la interfaz y animaciones",
             "Añadido contacto para reportar errores o sugerencias al desarrollador mediante enlace a email en esta ventana",
-            "Solucionado error que permitía aumentar contadores más allá del límite"
+            "Solucionado error que permitía aumentar contadores más allá del límite",
+            "Solucionado error al aplicar los colores a algunos contadores",
         ],
     },
     {
