@@ -353,6 +353,17 @@ export default function Roulette() {
                     >
                     ?
                     </button>
+                    <a
+                        href="https://github.com/dgp04/nuzlocke-roulette"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-all duration-200 shadow-md hover:shadow-lg hover:cursor-pointer"
+                        title="Ver en GitHub"
+                    >
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+                        </svg>
+                    </a>
                 </div>
                 <button
                     className={`px-4 sm:px-6 py-3 font-bold text-base sm:text-lg lg:text-xl rounded-lg transition-all duration-200 hover:cursor-pointer ${
@@ -385,9 +396,9 @@ export default function Roulette() {
                 crearSegmento={crearSegmento}
             />
 
-            <div className="w-full grid grid-cols-3 items-center gap-4">
-                {/* Columna izquierda vacía para balance */}
-                <div></div>
+            <div className="w-full flex flex-col items-center gap-4 sm:grid sm:grid-cols-3 sm:items-center sm:gap-6">
+                {/* Columna izquierda vacía para balance en desktop */}
+                <div className="hidden sm:block"></div>
 
                 {/* Botón centrado en la columna del medio */}
                 <div className="flex justify-center">
@@ -405,11 +416,9 @@ export default function Roulette() {
                 </div>
 
                 {/* Switch en la columna derecha */}
-                <Gen7Switch
-                    isGen7Mode={isGen7Mode}
-                    onChange={setIsGen7Mode}
-                    disabled={girando || editando}
-                />
+                <div className="flex justify-center sm:justify-start">
+                    <Gen7Switch isGen7Mode={isGen7Mode} onChange={setIsGen7Mode} disabled={girando || editando} />
+                </div>
             </div>
 
             {/* Contadores con texto más grande */}
