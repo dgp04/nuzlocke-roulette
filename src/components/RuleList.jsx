@@ -1,9 +1,18 @@
-export default function RuleList({ reglas, colores}){
+import EditRulesButton from "./EditRulesButton"
+
+export default function RuleList({ reglas, colores, editando, girando, setEditando }){
     return (
         <div className="bg-gray-100 p-5 sm:p-7 rounded-lg w-full">
-            <h3 className="font-bold text-xl sm:text-2xl lg:text-3xl mb-5 text-gray-800">
-                📋 Reglas actuales ({reglas.length}):
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-5 space-y-3 sm:space-y-0">
+                <h3 className="font-bold text-xl sm:text-2xl lg:text-3xl mb-5 text-gray-800">
+                    📋 Reglas actuales ({reglas.length}):
+                </h3>
+                <EditRulesButton
+                    girando={girando}
+                    editando={editando}
+                    setEditando={setEditando}
+                />
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {reglas.map((regla, index) => (
                 <div key={index} className="bg-white p-4 sm:p-5 rounded-lg border border-gray-200">

@@ -1,22 +1,29 @@
-export default function EditRuleList({ agregarRegla, reglas, editarRegla, eliminarRegla, restaurarReglas, colores }){
+import EditRulesButton from "./EditRulesButton"
+
+export default function EditRuleList({ agregarRegla, reglas, editarRegla, eliminarRegla, restaurarReglas, colores, editando, girando, setEditando }) {
     return (
         <div className="bg-gray-50 p-5 sm:p-7 rounded-lg w-full border-2 border-gray-200">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-5 space-y-3 sm:space-y-0">
                 <h3 className="font-bold text-xl sm:text-2xl lg:text-3xl text-gray-800">✏️ Editar Reglas</h3>
                 <div className="flex gap-3">
                     <button
-                        className="px-4 py-2 bg-green-600 text-white text-sm sm:text-base lg:text-lg font-bold rounded hover:bg-green-700 disabled:opacity-50 hover:cursor-pointer"
+                        className="px-4 py-2 bg-green-600 rounded-lg text-white text-sm sm:text-base lg:text-lg font-bold hover:bg-green-700 disabled:opacity-50 hover:cursor-pointer"
                         onClick={agregarRegla}
                         disabled={reglas.length >= 12}
                     >
                         + Añadir
                     </button>
                     <button
-                        className="px-4 py-2 bg-gray-600 text-white text-sm sm:text-base lg:text-lg font-bold rounded hover:bg-gray-700 hover:cursor-pointer"
+                        className="px-4 py-2 bg-gray-600 text-white text-sm sm:text-base lg:text-lg font-bold rounded-lg hover:bg-gray-700 hover:cursor-pointer"
                         onClick={restaurarReglas}
                     >
                         🔄 Restaurar
                     </button>
+                    <EditRulesButton
+                        girando={girando}
+                        editando={editando}
+                        setEditando={setEditando}
+                    />
                 </div>
             </div>
 
@@ -47,7 +54,7 @@ export default function EditRuleList({ agregarRegla, reglas, editarRegla, elimin
                             />
                         </div>
                         <button
-                        className="px-4 py-3 bg-red-500 text-white text-sm sm:text-base lg:text-lg rounded hover:bg-red-600 disabled:opacity-50 flex-shrink-0 w-full sm:w-auto hover:cursor-pointer"
+                        className="px-4 py-3 bg-red-500 text-white text-sm sm:text-base lg:text-lg rounded-lg hover:bg-red-600 disabled:opacity-50 flex-shrink-0 w-full sm:w-auto hover:cursor-pointer"
                             onClick={() => eliminarRegla(index)}
                             disabled={reglas.length <= 3}
                         >

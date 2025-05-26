@@ -82,6 +82,7 @@ const actualizaciones = [
             "Añadido contacto para reportar errores o sugerencias al desarrollador mediante enlace a email en esta ventana",
             "Solucionado error que permitía aumentar contadores más allá del límite",
             "Solucionado error al aplicar los colores a algunos contadores",
+            "Botón de editar reglas desplazado a la parte superior de la lista de reglas para un diseño más accesible y lógico",
         ],
     },
     {
@@ -256,8 +257,8 @@ export default function Roulette() {
 
     const agregarRegla = () => {
         if (reglas.length < 12) {
-            setReglas([...reglas, { titulo: "✨ Nueva regla", descripcion: "Describe aquí el efecto de la regla" }])
-            localStorage.setItem("reglasUsuario", JSON.stringify([...reglas, { titulo: "✨ Nueva regla", descripcion: "Describe aquí el efecto de la regla" }]))
+            setReglas([...reglas, { titulo: "", descripcion: "" }])
+            localStorage.setItem("reglasUsuario", JSON.stringify([...reglas, { titulo: "", descripcion: "" }]))
         }
     }
 
@@ -365,15 +366,7 @@ export default function Roulette() {
                         </svg>
                     </a>
                 </div>
-                <button
-                    className={`px-4 sm:px-6 py-3 font-bold text-base sm:text-lg lg:text-xl rounded-lg transition-all duration-200 hover:cursor-pointer ${
-                    editando ? "bg-green-600 text-white hover:bg-green-700" : "bg-blue-600 text-white hover:bg-blue-700"
-                    }`}
-                    onClick={() => setEditando(!editando)}
-                    disabled={girando}
-                >
-                    {editando ? "✅ Guardar" : "✏️ Editar Reglas"}
-                </button>
+                
             </div>
 
             <p className="text-center text-gray-600 mb-6 sm:mb-8 text-base sm:text-lg lg:text-xl">
@@ -524,6 +517,9 @@ export default function Roulette() {
                     eliminarRegla={eliminarRegla}
                     restaurarReglas={restaurarReglas}
                     colores={colores}
+                    editando={editando}
+                    girando={girando}
+                    setEditando={setEditando}
                 />
             )}
 
@@ -532,6 +528,9 @@ export default function Roulette() {
                 <RuleList
                     reglas={reglas}
                     colores={colores}
+                    editando={editando}
+                    girando={girando}
+                    setEditando={setEditando}
                 />
             )}
             </div>
