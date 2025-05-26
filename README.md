@@ -30,8 +30,6 @@ A modern, interactive roulette wheel designed specifically for Pokémon Nuzlocke
 ### 📋 Additional Features
 - **Update History**: Built-in changelog modal
 - **Rule Persistence**: Automatic saving of custom rules
-- **Export/Import**: Easy backup and sharing of rule sets
-- **Dark Mode Ready**: Prepared for theme switching
 
 ## 🚀 Getting Started
 
@@ -62,7 +60,7 @@ A modern, interactive roulette wheel designed specifically for Pokémon Nuzlocke
    ```
 
 4. **Open your browser**
-   Navigate to `http://localhost:3000`
+   Navigate to `http://localhost:5173`
 
 ### Production Build
 
@@ -81,7 +79,7 @@ npm start
 
 2. **Activate the Roulette**: The wheel becomes active when you meet any condition:
    - Complete 3 routes
-   - Defeat 1 gym leader (Classic) or 1 Kahuna/4 Trials (Gen 7)
+   - Defeat 1 gym leader (Classic) or 1 Kahuna/1 Trial (Gen 7)
    - Lose 1 Pokémon
 
 3. **Spin and Apply**: Click "🎯 Tirar Ruleta" to spin and receive your penalty
@@ -93,34 +91,18 @@ npm start
 4. **Restore Defaults**: Use "🔄 Restaurar" to reset to original rules
 
 ### Gen 7 Mode
-1. **Enable Gen 7**: Toggle the switch in the top-right
+1. **Enable Gen 7**: Toggle the switch to use Gen 7 conditions
 2. **Switch Counters**: Use the Trials/Kahunas selector
-3. **Different Requirements**: 4 Trials or 1 Kahuna needed to activate
+3. **Different Requirements**: 1 Trial    or 1 Kahuna needed to activate
 
 ## 🛠️ Technology Stack
 
-- **Framework**: Next.js 14+ (App Router)
+- **Framework**: React 18.+
 - **Language**: TypeScript/JavaScript
 - **Styling**: Tailwind CSS
-- **Icons**: Lucide React
+- **Icons**: Heroicons
 - **Animations**: CSS Transitions
 - **Storage**: localStorage (browser-based)
-
-## 📁 Project Structure
-
-```
-nuzlocke-roulette/
-├── app/
-│   ├── layout.tsx          # Root layout
-│   ├── page.tsx            # Main page
-│   └── globals.css         # Global styles
-├── components/
-│   └── ruleta-nuzlocke.jsx # Main roulette component
-├── public/                 # Static assets
-├── README.md
-├── package.json
-└── tailwind.config.js
-```
 
 ## 🎨 Customization
 
@@ -175,13 +157,13 @@ If you encounter any issues or have suggestions:
 - Open an issue on GitHub
 - Check the update history in the app
 - Review the documentation
+- Contact developers in the mailto link at the end of update history
 
 ## 🔄 Version History
 
-- **v2.1.0**: Gen 7 (Alola) mode support
-- **v2.0.0**: Complete UI redesign and responsiveness
-- **v1.5.0**: Counter system implementation  
-- **v1.0.0**: Initial release with basic roulette functionality
+- **v1.1**: Gen 7 (Alola) mode support
+- **v1.0.1**: Complete UI redesign and responsiveness
+- **v1.0.0**: Initial release with basic roulette functionality and counter system implementation
 
 ---
 
