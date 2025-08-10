@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Counter from "./Counter"
 import Gen7Switch from "./Gen7Switch"
 import RouletteComponent from "./RouletteComponent"
@@ -137,6 +137,7 @@ export default function Roulette() {
     const [modalCerrando, setModalCerrando] = useState(false)
     const [vidas, setVidas] = useState(localStorage.getItem("nuzlocke_vidas"))
     const [vidasRestantes, setVidasRestantes] = useState()
+    const audioRef = useRef(null);
 
     // Contadores
     const [isGen7Mode, setIsGen7Mode] = useState(false)
@@ -177,6 +178,12 @@ export default function Roulette() {
         setVidasRestantes(vidas);
     }, [vidas]);
 
+    const reproducirAudio = () => {
+        if (audioRef.current) {
+        audioRef.current.currentTime = 0; // Reiniciar para poder reproducir rápido varias veces
+        audioRef.current.play();
+        }
+    };
 
     // Verificar si se puede tirar
     const puedeGirar =
@@ -232,6 +239,7 @@ export default function Roulette() {
         case "muertes":
             if (contadorMuertes < 1) {
                 setContadorMuertes(prev => prev + 1);
+                reproducirAudio()
                 setVidasRestantes(prev => {
                 const nuevasVidas = Math.max(prev - 1, 0);
                 localStorage.setItem("nuzlocke_vidas", nuevasVidas);
@@ -558,6 +566,7 @@ export default function Roulette() {
                 { vidasRestantes > 0 ? (
                     <>
                         {/* Contador de Muertes */}
+                        <audio ref={audioRef} src="/sounds/yarrr.mp3" preload="auto" />
                         <Counter
                             title={"💀 Muertes"}
                             counter={contadorMuertes}
