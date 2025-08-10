@@ -55,9 +55,11 @@ export default function Counter({ title, counter, onIncrement, disabled, text, c
     return (
         <div className={`${colors.bg} border-2 ${colors.border} rounded-xl p-5 sm:p-7 text-center`}>
             <h3 className={`text-lg sm:text-xl lg:text-2xl font-bold ${colors.title} mb-3`}>{title}</h3>
-            <div className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${colors.counter} mb-4`}>
-                {counter}/{limit}
-            </div>
+            {title !== "Has perdido todas tus vidas" && (
+                <div className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${colors.counter} mb-4`}>
+                    {counter}/{limit}
+                </div>
+            )}
             <button
                 className={`px-4 sm:px-6 py-3 ${colors.button} text-white font-bold text-sm sm:text-base lg:text-lg rounded-lg disabled:opacity-50 transition-all duration-200 w-full sm:w-auto hover:cursor-pointer`}
                 onClick={onIncrement}

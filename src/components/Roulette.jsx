@@ -6,6 +6,7 @@ import RouletteResult from "./RouletteResult"
 import Modal from "./ModalComponent"
 import RuleList from "./RuleList"
 import EditRuleList from "./EditRuleList"
+import VidasDisplay from "./VidasComponent"
 
 const reglasIniciales = [
     {
@@ -69,6 +70,19 @@ const colores = [
 
 const actualizaciones = [
     {
+        version: "v1.2",
+        fecha: "10/08/2025",
+        titulo: "❤️ Contador de vidas personalizable",
+        cambios: [
+            "Añadido botón de configuración para personalizar el número de vidas iniciales",
+            "El contador de vidas se actualiza automáticamente al iniciar un nuevo Nuzlocke",
+            "Las vidas se almacenan para nunca perder la cuenta de ellas",
+            "Al morir un Pokémon y sumarlo al contador, la vida se resta automáticamente",
+            "Capacidad de añadir entre 1 y 50 vidas a tu Locke",
+            "Añaddido un contenedor donde se muestran las vidas restantes"
+        ]
+    },
+    {
         version: "v1.1",
         fecha: "26/05/2025",
         titulo: "🌺 Modo Gen 7 (Alola)",
@@ -118,8 +132,11 @@ export default function Roulette() {
     const [girando, setGirando] = useState(false)
     const [angulo, setAngulo] = useState(0)
     const [resultado, setResultado] = useState(null)
+    const [tipoModal, setTipoModal] = useState("")
     const [modalAbierto, setModalAbierto] = useState(false)
     const [modalCerrando, setModalCerrando] = useState(false)
+    const [vidas, setVidas] = useState(localStorage.getItem("nuzlocke_vidas"))
+    const [vidasRestantes, setVidasRestantes] = useState()
 
     // Contadores
     const [isGen7Mode, setIsGen7Mode] = useState(false)
@@ -141,6 +158,25 @@ export default function Roulette() {
         localStorage.setItem("questCounter", contadorPruebas)
         localStorage.setItem("kahunaCounter", contadorKahunas)
     }, [contadorRutas, contadorGimnasios, contadorMuertes, contadorPruebas, contadorKahunas])
+    
+    // Leer las vidas de localStorage al montar el componente
+    useEffect(() => {
+        const vidasGuardadas = localStorage.getItem("nuzlocke_vidas");
+        if (vidasGuardadas) {
+            setVidas(Number(vidasGuardadas));
+        }
+    }, []);
+
+    // Guardar vidas en localStorage cada vez que cambien
+    useEffect(() => {
+        localStorage.setItem("nuzlocke_vidas", vidas);
+    }, [vidas]);
+
+    // Al cambiar configuración (vidasTotales), reseteamos vidasRestantes
+    useEffect(() => {
+        setVidasRestantes(vidas);
+    }, [vidas]);
+
 
     // Verificar si se puede tirar
     const puedeGirar =
@@ -194,7 +230,14 @@ export default function Roulette() {
             contadorGimnasios < 1 ? setContadorGimnasios((prev) => prev + 1) : setContadorGimnasios(contadorGimnasios)
             break
         case "muertes":
-            contadorMuertes < 1 ? setContadorMuertes((prev) => prev + 1) : setContadorMuertes(contadorMuertes)
+            if (contadorMuertes < 1) {
+                setContadorMuertes(prev => prev + 1);
+                setVidasRestantes(prev => {
+                const nuevasVidas = Math.max(prev - 1, 0);
+                localStorage.setItem("nuzlocke_vidas", nuevasVidas);
+                return nuevasVidas;
+                });
+            }
             break
         case "pruebas":
             contadorPruebas < 1 ? setContadorPruebas((prev) => prev + 1) : setContadorPruebas(contadorPruebas)
@@ -282,6 +325,13 @@ export default function Roulette() {
         }, 300)
     }
 
+    function handleReiniciar() {
+        setVidasRestantes(vidas);
+        setContadorMuertes(0);
+    }
+
+    let disableButton = contadorMuertes > 0 && true || false
+
     const crearSegmento = (index) => {
         const anguloPorSegmento = 360 / reglas.length
         const anguloInicio = index * anguloPorSegmento
@@ -339,7 +389,7 @@ export default function Roulette() {
         </g>
         )
     }
-
+    
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-700 flex flex-col items-center justify-center p-2 sm:p-4">
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 w-full max-w-7xl">
@@ -347,12 +397,22 @@ export default function Roulette() {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-2 sm:space-y-0">
                 <div className="flex items-center justify-center sm:justify-start space-x-3">
                     <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-800">🎮 Ruleta Nuzlocke</h1>
+                    {/* Botón actualizaciones */}
                     <button
-                    onClick={() => setModalAbierto(true)}
+                    onClick={() => { setTipoModal("actualizaciones"); setModalAbierto(true); }}
                     className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full flex items-center justify-center font-bold text-lg sm:text-xl lg:text-2xl transition-all duration-200 shadow-md hover:shadow-lg hover:cursor-pointer"
                     title="Ver actualizaciones"
                     >
                     ?
+                    </button>
+
+                    {/* Botón configuración */}
+                    <button
+                    onClick={() => { setTipoModal("configuracion"); setModalAbierto(true); }}
+                    className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full flex items-center justify-center text-lg sm:text-xl lg:text-2xl transition-all duration-200 shadow-md hover:shadow-lg hover:cursor-pointer"
+                    title="Configuración"
+                    >
+                    ⚙️
                     </button>
                     <a
                         href="https://github.com/dgp04/nuzlocke-roulette"
@@ -495,17 +555,38 @@ export default function Roulette() {
                 )}
                 </div>
 
-                {/* Contador de Muertes */}
-                <Counter
-                    title={"💀 Muertes"}
-                    counter={contadorMuertes}
-                    onIncrement={() => incrementarContador("muertes")}
-                    disabled={girando || editando}
-                    text={"+ Pokémon Muerto"}
-                    counterText={"Sin muertes"}
-                    limit={1}
-                    color={"purple"}
-                />
+                { vidasRestantes > 0 ? (
+                    <>
+                        {/* Contador de Muertes */}
+                        <Counter
+                            title={"💀 Muertes"}
+                            counter={contadorMuertes}
+                            onIncrement={() => incrementarContador("muertes")}
+                            disabled={girando || editando || disableButton}
+                            text={"+ Pokémon Muerto"}
+                            counterText={"Sin muertes"}
+                            limit={1}
+                            color={"purple"}
+                        />
+                    </>
+                ) : (
+                    <>
+                        {/* Contador de Reinicio */}
+                        <Counter
+                            title={"Has perdido todas tus vidas"}
+                            onIncrement={() => handleReiniciar()}
+                            disabled={girando || editando || disableButton}
+                            text={"Reiniciar Locke"}
+                            counterText={"Fin del Locke"}
+                            color={"purple"}
+                        />
+                    </>
+                )}
+            </div>
+
+            {/*Contenedor de vidas*/}
+            <div className="mt-6 sm:mt-8">
+                <VidasDisplay vidas={vidasRestantes} setVidas={setVidas} />
             </div>
 
             {/* Editor de reglas con texto más grande */}
@@ -541,6 +622,9 @@ export default function Roulette() {
                 modalCerrando={modalCerrando}
                 cerrarModal={cerrarModal}
                 actualizaciones={actualizaciones}
+                tipo={tipoModal}
+                vidas={vidas}
+                setVidas={setVidas}
             />
         )}
         </div>
