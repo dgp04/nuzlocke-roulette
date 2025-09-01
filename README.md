@@ -161,6 +161,7 @@ If you encounter any issues or have suggestions:
 
 ## 🔄 Version History
 
+- **v1.2**: Customizable life counter
 - **v1.1**: Gen 7 (Alola) mode support
 - **v1.0.1**: Complete UI redesign and responsiveness
 - **v1.0.0**: Initial release with basic roulette functionality and counter system implementation
