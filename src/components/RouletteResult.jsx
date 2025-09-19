@@ -18,9 +18,9 @@ export default function RouletteResult({ resultado, cerrarResultado }) {
         </button>
 
         <div className="text-center">
-            <p className="text-2xl font-bold mb-2">🎯 {resultado.titulo}</p>
+            <p className="text-2xl font-bold mb-2">{resultado.titulo}</p>
             <p className="text-lg text-gray-700 bg-white bg-opacity-50 rounded-lg p-4">
-            📝 {resultado.descripcion}
+                {resultado.descripcion}
             </p>
         </div>
         </motion.div>
