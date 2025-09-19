@@ -1,5 +1,4 @@
 export default function Modal({ modalCerrando, cerrarModal, actualizaciones, tipo, vidas, setVidas }){
-    
     return (
         <div
         className={`fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all duration-300 ${
@@ -14,8 +13,8 @@ export default function Modal({ modalCerrando, cerrarModal, actualizaciones, tip
                 {/* Header del modal */}
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
                     <div className="flex justify-between items-center">
-                        { tipo === "actualuzaciones" && (
-                            <h2 className="text-2xl sm:text-3xl font-bold">📋 Historial de Actualizaciones</h2>
+                        { tipo === "actualizaciones" && (
+                            <h2 className="text-2xl sm:text-3xl font-bold">Historial de Actualizaciones</h2>
                         )}
                         { tipo === "configuracion" && (
                             <h2 className="text-2xl sm:text-3xl font-bold">⚙️ Configuración</h2>

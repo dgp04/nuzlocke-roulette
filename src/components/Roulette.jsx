@@ -7,6 +7,7 @@ import Modal from "./ModalComponent"
 import RuleList from "./RuleList"
 import EditRuleList from "./EditRuleList"
 import VidasDisplay from "./VidasComponent"
+import { AnimatePresence } from "framer-motion"
 
 const reglasIniciales = [
     {
@@ -70,6 +71,18 @@ const colores = [
 
 const actualizaciones = [
     {
+        version: "v1.2.1",
+        fecha: "19/09/2025",
+        titulo: "🎲 Mejora en el sistema de castigos",
+        cambios: [
+            "Ahora puedes tener múltiples castigos abiertos simultáneamente",
+            "Al tirar la ruleta con un castigo activo este no se borra permitiendo acumular varios castigos",
+            "Cada castigo solo se elimina al pulsar el botón de Cumplido (✅) en su tarjeta correspondiente",
+            "Mejora del diseño de los resultados con una animación de entrada y salida",
+            "Solucionado error de resultados duplicados al tirar de la ruleta",
+        ]
+    },
+    {
         version: "v1.2",
         fecha: "10/08/2025",
         titulo: "❤️ Contador de vidas personalizable",
@@ -131,7 +144,7 @@ const actualizaciones = [
 export default function Roulette() {
     const [girando, setGirando] = useState(false)
     const [angulo, setAngulo] = useState(0)
-    const [resultado, setResultado] = useState(null)
+    const [resultados, setResultados] = useState([])
     const [tipoModal, setTipoModal] = useState("")
     const [modalAbierto, setModalAbierto] = useState(false)
     const [modalCerrando, setModalCerrando] = useState(false)
@@ -274,9 +287,13 @@ export default function Roulette() {
         }
     }
 
-    const cerrarResultado = () => {
-        setResultado(null)
-    }
+    const cerrarResultado = (id) => {
+        // Después de la duración de la animación, lo eliminamos
+        setTimeout(() => {
+            setResultados((prev) => prev.filter((r) => r.id !== id));
+        }, 400); // 400ms = duración de exit
+    };
+
 
     const girar = () => {
         if (girando || !puedeGirar) return
@@ -288,16 +305,29 @@ export default function Roulette() {
         const anguloObjetivo = 90 - (seleccion * anguloPorSegmento + anguloPorSegmento / 2)
         const rotacionFinal = 360 * 5 + anguloObjetivo
 
-        setResultado(null)
         setGirando(true)
         setAngulo((prev) => prev + rotacionFinal)
 
         setTimeout(() => {
-        setResultado(reglas[seleccion])
-        setGirando(false)
-        resetearContadores()
+            const nuevoResultado = {
+                id: Date.now(), // importante invocar
+                titulo: reglas[seleccion].titulo,
+                descripcion: reglas[seleccion].descripcion
+            };
+
+            setResultados((prev) => {
+                // Evitar añadir la misma regla exacta
+                if (prev.some(r => r.titulo === reglas[seleccion].titulo)) {
+                    return prev;
+                }
+                return [...prev, nuevoResultado];
+            });
+            setGirando(false)
+            resetearContadores()
         }, 3000)
+        console.log(resultados)
     }
+
 
     const editarRegla = (index, campo, valor) => {
         const nuevasReglas = [...reglas]
@@ -442,20 +472,27 @@ export default function Roulette() {
             </p>
 
             <div className="flex flex-col items-center space-y-6 sm:space-y-8">
-            {/* Resultado encima de la ruleta con botón de cerrar */}
-            {resultado && (
-                <RouletteResult
-                    cerrarResultado={cerrarResultado}
-                    resultado={resultado}
-                />
-            )}
+                {resultados.length > 0 && (
+                    <div className="flex flex-col items-center space-y-6 sm:space-y-8 w-full">
+                        <AnimatePresence>
+                        {resultados.map((resultado) => (
+                            <RouletteResult
+                            key={resultado.id}
+                            cerrarResultado={() => cerrarResultado(resultado.id)}
+                            resultado={resultado}
+                            />
+                        ))}
+                        </AnimatePresence>
+                    </div>
+                )}
 
-            {/* Contenedor de la ruleta */}
-            <RouletteComponent
-                reglas={reglas}
-                angulo={angulo}
-                crearSegmento={crearSegmento}
-            />
+
+                {/* Contenedor de la ruleta */}
+                <RouletteComponent
+                    reglas={reglas}
+                    angulo={angulo}
+                    crearSegmento={crearSegmento}
+                />
 
             <div className="w-full flex flex-col items-center gap-4 sm:grid sm:grid-cols-3 sm:items-center sm:gap-6">
                 {/* Columna izquierda vacía para balance en desktop */}
